@@ -12,21 +12,7 @@
 
 #include "minishell.h"
 
-void		print_env(char **envp)
-{
-	int		i;
-	char	**arr;
-
-	arr = envp;
-	i = 0;
-	while (arr[i])
-	{
-		ft_printf("%s\n", arr[i]);
-		++i;
-	}
-}
-
-void		minishell(char **envp)
+void		minishell(t_env *env)
 {
 	char	*line;
 	char	**semicolon;
@@ -44,7 +30,7 @@ void		minishell(char **envp)
 		i = 0;
 		while (semicolon[i] && running)
 		{
-			running = parse_line(semicolon[i], envp);
+			running = parse_line(semicolon[i], env);
 			++i;
 		}
 		ft_free_2d((void*)semicolon);
@@ -54,7 +40,7 @@ void		minishell(char **envp)
 	}
 }
 
-char		**unwrap(char **arr)
+char		**unwrap(char **arr, t_env *env)
 {
 	int		row;
 	char	*tmp;
@@ -63,7 +49,7 @@ char		**unwrap(char **arr)
 	while (arr[row])
 	{
 		tmp = arr[row];
-		arr[row] = parse_cd_arg(arr[row]);
+		arr[row] = get_values_from_keys(arr[row], env);
 		free(tmp);
 		++row;
 	}

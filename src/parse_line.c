@@ -22,11 +22,11 @@ int			parse_dir(char **arr)
 	return (FALSE);
 }
 
-int			parse_env(char **arr, char **envp)
+int			parse_env(char **arr, t_env *env)
 {
 	if (!ft_strcmp(arr[0], "env"))
 	{
-		print_env(envp);
+		print_env(*env);
 		return (TRUE);
 	}
 	if (!ft_strcmp(arr[0], "setenv"))
@@ -34,7 +34,7 @@ int			parse_env(char **arr, char **envp)
 		if (!arr[1] || !arr[2])
 			ft_printf(RED"Usage : setenv [name] [value]\n"RESET);
 		else
-			setenv(arr[1], arr[2], TRUE);
+			set_var(env, arr[1], arr[2]);
 		return (TRUE);
 	}
 	if (!ft_strcmp(arr[0], "unsetenv"))
@@ -42,34 +42,13 @@ int			parse_env(char **arr, char **envp)
 		if (!arr[1])
 			ft_printf(RED"Usage : unsetenv [name]\n"RESET);
 		else
-			unsetenv(arr[1]);
+			unset_var(env, arr[1]);
 		return (TRUE);
 	}
 	return (FALSE);
 }
 
-int			parse_cd(char **arr)
-{
-	if (!ft_strcmp(arr[0], "cd"))
-	{
-		if (!arr[1])
-		{
-			arr[1] = ft_strdup(getenv("HOME"));
-			arr[2] = NULL;
-		}
-		if (arr[1] && arr[2])
-		{
-			ft_printf(RED"cd : too many arguments\n"RESET);
-			return (TRUE);
-		}
-		if (chdir(arr[1]) == -1)
-			ft_printf(RED"cd: no such file or directory: %s\n"RESET, arr[1]);
-		return (TRUE);
-	}
-	return (FALSE);
-}
-
-static int	choose_command(char **arr, char **envp, int length)
+static int	choose_command(char **arr, t_env *env, int length)
 {
 	int		error;
 
@@ -77,16 +56,20 @@ static int	choose_command(char **arr, char **envp, int length)
 	if (length > 0)
 	{
 		error |= parse_dir(arr);
-		error |= parse_env(arr, envp);
-		error |= parse_cd(arr);
+		error |= parse_env(arr, env);
+		error |= parse_cd(arr, env);
 		error |= parse_echo(arr);
-		error |= parse_ls_pwd(arr, envp, "ls", "/ls");
-		error |= parse_ls_pwd(arr, envp, "pwd", "/pwd");
+		if (error)
+			return (error);
+		error |= parse_exec_command(arr, *env);
+		if (error)
+			return (error);
+		error |= exec_command(arr, *env);
 	}
 	return (error);
 }
 
-int			parse_line(char *line, char **envp)
+int			parse_line(char *line, t_env *env)
 {
 	char	**arr;
 	int		error;
@@ -98,14 +81,14 @@ int			parse_line(char *line, char **envp)
 		ft_free_2d((void**)arr);
 		return (TRUE);
 	}
-	arr = unwrap(arr);
+	arr = unwrap(arr, env);
 	length = (int)ft_strlen(arr[0]);
 	if (length == 4 && !ft_strcmp(arr[0], "exit"))
 	{
 		ft_free_2d((void**)arr);
 		return (FALSE);
 	}
-	error = choose_command(arr, envp, length);
+	error = choose_command(arr, env, length);
 	if (error == FALSE && ft_strlen(arr[0]) > 0)
 		ft_printf(RED"minishell: command not found: %s\n"RESET, arr[0]);
 	ft_free_2d((void**)arr);

@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   parse_cd_arg.c                                     :+:      :+:    :+:   */
+/*   get_values_from_keys.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vmiachko <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,7 +12,7 @@
 
 #include "minishell.h"
 
-char		*parse_home(char *path, int l_path)
+char		*parse_home(char *path, int l_path, t_env *env)
 {
 	char	*result;
 	char	*home;
@@ -20,7 +20,7 @@ char		*parse_home(char *path, int l_path)
 	int		i;
 	int		j;
 
-	home = getenv("HOME");
+	home = get_env(env, "HOME");
 	l_home = (int)ft_strlen(home);
 	result = ft_memalloc(l_home + l_path);
 	i = 0;
@@ -41,12 +41,12 @@ int			check_tilda(char *path)
 	return (FALSE);
 }
 
-char		*parse_cd_arg(char *arr)
+char		*get_values_from_keys(char *arr, t_env *env)
 {
 	char	*path;
 
-	path = parse_variable(arr, 0, 0);
+	path = parse_variable(arr, 0, 0, env);
 	if (check_tilda(path))
-		path = parse_home(path, ft_strlen(path));
+		path = parse_home(path, ft_strlen(path), env);
 	return (path);
 }

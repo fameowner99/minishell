@@ -6,7 +6,7 @@
 /*   By: vmiachko <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/02 20:18:09 by vmiachko          #+#    #+#             */
-/*   Updated: 2019/02/03 15:13:55 by vmiachko         ###   ########.fr       */
+/*   Updated: 2019/02/05 12:19:51 by vmiachko         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,15 +22,30 @@
 # include "../libft/libft.h"
 # include <unistd.h>
 # include <stdlib.h>
+# include <sys/stat.h>
 
-void	minishell(char **envp);
-int		parse_line(char *line, char **envp);
-void	print_env(char **envp);
-char	*parse_variable(char *arr, int i, int j);
-char	*parse_cd_arg(char *arr);
-int		parse_echo(char **arr);
-int		parse_ls_pwd(char **arr, char **envp,
-			char *command_name, char *command_path);
-char	**unwrap(char **arr);
+typedef struct	s_env
+{
+	char		**arr;
+	int			size;
+}				t_env;
+
+void			minishell(t_env *env);
+int				parse_line(char *line, t_env *env);
+void			print_env(t_env env);
+char			*parse_variable(char *arr, int i, int j, t_env *env);
+char			*get_values_from_keys(char *arr, t_env *env);
+int				parse_echo(char **arr);
+int				parse_exec_command(char **arr, t_env env);
+char			**unwrap(char **arr, t_env *env);
+int				empty_space(t_env env);
+char			**realloc_2d(t_env *env, int newsize);
+t_env			copy_env(char **arr);
+void			set_var(t_env *env, char *key, char *value);
+void			unset_var(t_env *env, char *var);
+char			*get_env(t_env *env, char *to_find);
+int				parse_cd(char **arr, t_env *env);
+int				check_permission(char *path);
+int				exec_command(char **arr, t_env env);
 
 #endif

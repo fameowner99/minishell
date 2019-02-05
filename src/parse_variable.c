@@ -59,7 +59,7 @@ static char	*join_variable(char *result, char *buf, char *tmp)
 	return (result);
 }
 
-char		*parse_variable(char *arr, int i, int j)
+char		*parse_variable(char *arr, int i, int j, t_env *env)
 {
 	char	*result;
 	char	buf[MAXDIR];
@@ -76,7 +76,7 @@ char		*parse_variable(char *arr, int i, int j)
 			result = alloc_join(result, buf);
 			while (arr[i] && arr[i] != '$' && arr[i] != '/')
 				buf[j++] = arr[i++];
-			if ((tmp = getenv(buf)))
+			if ((tmp = get_env(env, buf)))
 				result = join_variable(result, buf, tmp);
 			ft_memset(buf, '\0', MAXDIR);
 			j = 0;

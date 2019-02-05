@@ -1,70 +1,90 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   parse_ls.c                                         :+:      :+:    :+:   */
+/*   parse_exec_command.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vmiachko <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/02/03 15:15:03 by vmiachko          #+#    #+#             */
-/*   Updated: 2019/02/03 16:27:17 by vmiachko         ###   ########.fr       */
+/*   Updated: 2019/02/05 18:24:31 by vmiachko         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-static char		*parse_path_variable(char *command_name, int i)
+int		check_permission(char *path)
+{
+	struct stat file_stat;
+
+	if (stat(path, &file_stat) < 0)
+		return (-1);
+	return (!S_ISDIR(file_stat.st_mode) && (file_stat.st_mode & S_IXUSR));
+}
+
+static char		*add(char *arr, char *command_name)
+{
+	char		*tmp;
+	char		*path;
+
+	path = ft_strjoin(arr, "/");
+	tmp = path;
+	path = ft_strjoin(tmp, command_name);
+	free(tmp);
+	return (path);
+}
+
+static char		*parse_path_v(char *command_name,
+									int i, t_env env, int *flag)
 {
 	char		**arr;
 	char		*path;
 	char		*tmp;
 
 	path = NULL;
-	if (!(tmp = getenv("PATH")))
+	if (!(tmp = get_env(&env, "PATH")))
 		return (NULL);
 	arr = ft_strsplit(tmp, ':');
 	while (arr[i])
 	{
-		path = ft_strjoin(arr[i], command_name);
-		if (!access(path, X_OK))
+		path = add(arr[i], command_name);
+		if ((*flag = check_permission(path)) > 0)
 		{
 			ft_free_2d((void*)arr);
 			return (path);
 		}
 		else
-		{
 			free(path);
-			path = NULL;
-		}
 		++i;
 	}
 	ft_free_2d((void*)arr);
-	return (path);
+	return (NULL);
 }
 
-int				parse_ls_pwd(char **arr, char **envp,
-			char *command_name, char *command_path)
+int				parse_exec_command(char **arr, t_env env)
 {
 	char		*path;
 	pid_t		pid;
+	int			flag;
 
-	if (!ft_strcmp(arr[0], command_name))
+	if (arr[0] && (path = parse_path_v(arr[0], 0, env, &flag)))
 	{
 		if ((pid = fork()) == -1)
 			exit(EXIT_FAILURE);
 		else if (pid == 0)
 		{
-			if ((path = parse_path_variable(command_path, 0)))
-			{
-				execve(path, arr, envp);
-				free(path);
-			}
+			execve(path, arr, env.arr);
+			free(path);
+			if (flag < 0)
+				ft_printf(RED"something wrong with stat()\n"RESET);
 			else
-				ft_printf(RED"minishell: command not found: %s\n"RESET,
-			command_name);
+				ft_printf(RED"minishell: permission denied: %s\n"RESET,
+					arr[0]);
 			exit(EXIT_SUCCESS);
 		}
 		wait(NULL);
+		path ? free(path) : 0;
 		return (TRUE);
 	}
+	path ? free(path) : 0;
 	return (FALSE);
 }
