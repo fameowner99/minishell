@@ -47,5 +47,6 @@ char			*get_env(t_env *env, char *to_find);
 int				parse_cd(char **arr, t_env *env);
 int				check_permission(char *path);
 int				exec_command(char **arr, t_env env);
+char			**split_line(char *line);
 
 #endif

@@ -26,7 +26,11 @@ static void	change_dir_to_prev(char *dir, t_env *env)
 
 static void	change_dir(char *arr, char *dir, t_env *env)
 {
-	if (chdir(arr) == -1)
+	int		p;
+
+	if ((p = chdir(arr)) == -1 && !access(arr, 0))
+		ft_printf(RED"cd: permission denied: %s\n"RESET, arr);
+	else if (p == -1)
 		ft_printf(RED"cd: no such file or directory: %s\n"RESET, arr);
 	else
 		set_var(env, "OLDPWD", dir);

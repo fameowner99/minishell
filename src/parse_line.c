@@ -75,7 +75,9 @@ int			parse_line(char *line, t_env *env)
 	int		error;
 	int		length;
 
-	arr = ft_strsplit(line, ' ');
+	arr = split_line(line);
+	if (!arr)
+		return (TRUE);
 	if (!arr[0])
 	{
 		ft_free_2d((void**)arr);

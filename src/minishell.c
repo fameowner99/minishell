@@ -15,9 +15,7 @@
 void		minishell(t_env *env)
 {
 	char	*line;
-	char	**semicolon;
 	int		running;
-	int		i;
 
 	line = NULL;
 	running = TRUE;
@@ -26,14 +24,7 @@ void		minishell(t_env *env)
 	{
 		if (get_next_line(STDIN, &line) <= 0)
 			return ;
-		semicolon = ft_strsplit(line, ';');
-		i = 0;
-		while (semicolon[i] && running)
-		{
-			running = parse_line(semicolon[i], env);
-			++i;
-		}
-		ft_free_2d((void*)semicolon);
+		running = parse_line(line, env);
 		running ? ft_printf(GREEN"==> "RESET, line) : 0;
 		line ? free(line) : 0;
 		line = NULL;
